@@ -98,10 +98,10 @@ ax_zoom.set_ylim(99.9, 100.02)
 ax_zoom.set_xticks(range(1, 13))
 ax_zoom.legend(fontsize=8, loc="lower left")
 
-fig.suptitle("Figura 3. Robustez segun la cantidad de bits alterados "
+fig.suptitle("Figura 4. Robustez segun la cantidad de bits alterados "
              "(50 caracteres, 5000 repeticiones por punto)", y=1.02)
 fig.tight_layout()
-fig.savefig("fig3_flips.png", bbox_inches="tight")
+fig.savefig("fig4_flips.png", bbox_inches="tight")
 plt.close(fig)
 
 
@@ -117,10 +117,10 @@ ax.set_xscale("log")
 ax.set_yscale("log")
 ax.set_xlabel("Tamano del mensaje (caracteres)")
 ax.set_ylabel("Overhead (% de la trama que es redundancia)")
-ax.set_title("Figura 4. Costo en redundancia de cada algoritmo")
+ax.set_title("Figura 5. Costo en redundancia de cada algoritmo")
 ax.legend(fontsize=8)
 fig.tight_layout()
-fig.savefig("fig4_overhead.png", bbox_inches="tight")
+fig.savefig("fig5_overhead.png", bbox_inches="tight")
 plt.close(fig)
 
 
@@ -149,8 +149,39 @@ for ax, pivot, titulo in zip(axes, [pivot_h, pivot_f], ["Hamming", "Fletcher-16"
                     fontsize=7, color="black")
 
 fig.colorbar(im, ax=axes, label="Integridad (%)", fraction=0.025)
-fig.suptitle("Figura 5. Integridad: tramas que no terminaron en corrupcion silenciosa", y=1.02)
-fig.savefig("fig5_integridad.png", bbox_inches="tight")
+fig.suptitle("Figura 6. Integridad: tramas que no terminaron en corrupcion silenciosa", y=1.02)
+fig.savefig("fig6_integridad.png", bbox_inches="tight")
 plt.close(fig)
 
-print("Graficas generadas: fig1..fig5")
+
+
+# --- Figura 6: desglose de resultados de Hamming -------------------------
+fig, axes = plt.subplots(1, 2, figsize=(11, 4.2))
+
+categorias = [("no_error", "Sin error", "#2ca02c"),
+              ("corrected_ok", "Corregido correctamente", "#98df8a"),
+              ("miscorrected", "Corregido mal (fallo silencioso)", "#d62728"),
+              ("uncorrectable_detected", "Detectado, no corregible", "#ff7f0e")]
+
+for ax, n_chars in zip(axes, [20, 100]):
+    sub = hamming[hamming.tamano_chars == n_chars].sort_values("prob_error")
+    x = range(len(sub))
+    abajo = [0] * len(sub)
+    for col, etiqueta, color in categorias:
+        valores = (sub[col] / sub.repeticiones * 100).tolist()
+        ax.bar(x, valores, bottom=abajo, label=etiqueta, color=color, width=0.7)
+        abajo = [a + b for a, b in zip(abajo, valores)]
+    ax.set_xticks(list(x))
+    ax.set_xticklabels(sub.prob_error, rotation=45, fontsize=8)
+    ax.set_xlabel("Probabilidad de error por bit")
+    ax.set_ylabel("Porcentaje de tramas (%)")
+    ax.set_title(f"Mensaje de {n_chars} caracteres")
+    ax.set_ylim(0, 100)
+
+axes[1].legend(fontsize=7, loc="lower left", framealpha=0.9)
+fig.suptitle("Figura 3. Desglose de resultados del codigo de Hamming", y=1.0)
+fig.tight_layout()
+fig.savefig("fig3_desglose_hamming.png", bbox_inches="tight")
+plt.close(fig)
+
+print("Graficas generadas: fig1..fig6")
